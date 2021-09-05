@@ -34,4 +34,9 @@ final case class Elf64Header(
 
     sectionHeaders(index).getAttachment().asInstanceOf[Elf64StringTable]
   }
+
+  def getSectionByName(name: String): Option[Elf64SectionHeader] = {
+    val table = getSectionNameStringTable()
+    sectionHeaders.find(section => table.get(section.shName).equals(name))
+  }
 }
