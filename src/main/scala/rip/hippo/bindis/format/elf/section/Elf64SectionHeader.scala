@@ -24,7 +24,6 @@ final case class Elf64SectionHeader(
   def attach(section: ElfSection): Unit =
     attachment = Option(section)
 
-  def getAttachment(): ElfSection =
-    attachment.get
-
+  def getAttachment[T <: ElfSection]: T =
+    attachment.get.asInstanceOf[T]
 }

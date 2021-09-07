@@ -84,12 +84,14 @@ final case class Elf32SectionHeaderReader(elf32HeaderReader: Elf32HeaderReader) 
         }
         Elf32DynamicSection(entries)
       case SHT_NOTE =>
-        val size = 1
+        val size = sectionHeader.shSize
+        var bytesRead = 0
         val notes = ListBuffer[ElfNote]()
-        (0 until size).foreach(_ => {
+        while (bytesRead < size) {
           val namesz = inputStream.readInt()
           val descsz = inputStream.readInt()
           val nType = inputStream.readInt()
+          bytesRead += 12 + namesz + descsz
           val name = new Array[Byte](namesz)
           val desc = new Array[Byte](descsz)
           var read = inputStream.read(name)
@@ -99,7 +101,7 @@ final case class Elf32SectionHeaderReader(elf32HeaderReader: Elf32HeaderReader) 
           assertEqual(read, descsz, s"Invalid note section, expected=$descsz got=$read")
           inputStream.skip(read % 4)
           notes += ElfNote(nType, name, desc)
-        })
+        }
         ElfNoteSection(notes)
       case SHT_REL =>
         val size = sectionHeader.shSize / sectionHeader.shEntsize

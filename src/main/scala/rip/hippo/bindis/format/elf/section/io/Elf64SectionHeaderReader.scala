@@ -80,22 +80,24 @@ final case class Elf64SectionHeaderReader(elf64HeaderReader: Elf64HeaderReader) 
         }
         Elf64DynamicSection(entries)
       case SHT_NOTE =>
-        val size = sectionHeader.shSize / sectionHeader.shEntsize
+        val size = sectionHeader.shSize
+        var bytesRead = 0
         val notes = ListBuffer[ElfNote]()
-        (0L until size).foreach(_ => {
+        while (bytesRead < size) {
           val namesz = inputStream.readInt()
           val descsz = inputStream.readInt()
           val nType = inputStream.readInt()
+          bytesRead += 12 + namesz + descsz
           val name = new Array[Byte](namesz)
           val desc = new Array[Byte](descsz)
           var read = inputStream.read(name)
           assertEqual(read, namesz, s"Invalid note section, expected=$namesz got=$read")
           inputStream.skip(read % 4)
           read = inputStream.read(desc)
-          assertEqual(read, desc, s"Invalid note section, expected=$descsz got=$read")
+          assertEqual(read, descsz, s"Invalid note section, expected=$descsz got=$read")
           inputStream.skip(read % 4)
           notes += ElfNote(nType, name, desc)
-        })
+        }
         ElfNoteSection(notes)
       case SHT_REL =>
         val size = sectionHeader.shSize / sectionHeader.shEntsize

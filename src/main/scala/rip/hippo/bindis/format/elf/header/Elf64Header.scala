@@ -32,7 +32,7 @@ final case class Elf64Header(
   def getSectionNameStringTable(): Elf64StringTable = {
     val index = if (eShstrndx == ElfConstants.SHN_XINDEX) sectionHeaders(0).shLink else eShstrndx.toInt
 
-    sectionHeaders(index).getAttachment().asInstanceOf[Elf64StringTable]
+    sectionHeaders(index).getAttachment[Elf64StringTable]
   }
 
   def getSectionByName(name: String): Option[Elf64SectionHeader] = {

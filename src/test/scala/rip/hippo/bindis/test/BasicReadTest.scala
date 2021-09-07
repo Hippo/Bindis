@@ -25,8 +25,10 @@ final class BasicReadTest extends AnyFunSuite {
             val header = elfReader.elf32Header.get.header
             val table = header.getSectionNameStringTable()
             header.sectionHeaders.foreach(section => {
-              println(table.get(section.shName))
+              println(table.get(section.shName) + " -> " + section)
             })
+
+            header.getSectionByName(".rodata").get.getAttachment[RawSection].bytes.foreach(b => println(s"0x${Integer.toString(b, 16)} (${b.toChar})"))
         }
         test match {
           case Failure(exception) => throw exception
